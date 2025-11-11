@@ -1,7 +1,7 @@
 // Configuração da API do n8n
 export const API_CONFIG = {
-  // URL do webhook - altere para a URL de produção
-  webhookUrl: "http://localhost:5678/webhook-test/37b72fd6-0deb-48de-bca5-c85c3f5f2864",
+  // URL do webhook n8n cloud
+  webhookUrl: "https://0lfius41ttxzwcngkaqxsbms.hooks.n8n.cloud/webhook-test/37b72fd6-0deb-48de-bca5-c85c3f5f2864",
   
   // Credenciais de autenticação básica
   auth: {
