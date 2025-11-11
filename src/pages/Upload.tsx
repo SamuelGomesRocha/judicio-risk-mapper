@@ -24,14 +24,17 @@ export default function UploadPage() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("dod", files.dod);
-    formData.append("etp", files.etp);
-    formData.append("tr", files.tr);
-
     try {
-      // Navigate to loading screen
-      navigate("/loading", { state: { formData } });
+      // Navigate to loading screen with files
+      navigate("/loading", { 
+        state: { 
+          files: {
+            dod: files.dod,
+            etp: files.etp,
+            tr: files.tr
+          }
+        } 
+      });
     } catch (error) {
       toast.error("Erro ao enviar arquivos");
       console.error(error);
