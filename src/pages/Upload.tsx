@@ -83,33 +83,49 @@ export default function UploadPage() {
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <Card className="p-8 shadow-xl">
-          <div className="mb-8 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center">
-                <FileText className="w-9 h-9 text-primary-foreground" />
+          <div className="mb-8">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-start gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center flex-shrink-0">
+                  <FileText className="w-9 h-9 text-primary-foreground" />
+                </div>
+                <div className="text-left">
+                  <h1 className="text-3xl font-bold text-foreground mb-2">
+                    Análise Simplificada de Riscos
+                  </h1>
+                  <p className="text-muted-foreground">
+                    Conforme ISO 31000 - Envie os documentos de contratação para análise
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <h1 className="text-3xl font-bold text-foreground">
-                Análise Simplificada de Riscos
-              </h1>
+              
               <Button
-                variant="ghost"
-                size="icon"
+                variant={apiConfig ? "outline" : "default"}
                 onClick={() => setShowApiModal(true)}
-                className="rounded-full"
-                title="Configurar API"
+                className="flex items-center gap-2 flex-shrink-0"
               >
-                <Settings className="w-5 h-5" />
+                <Settings className="w-4 h-4" />
+                {apiConfig ? "Reconfigurar API" : "Configurar API"}
               </Button>
             </div>
-            <p className="text-muted-foreground">
-              Conforme ISO 31000 - Envie os documentos de contratação para análise
-            </p>
+
+            {apiConfig && (
+              <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-foreground font-medium">API Configurada:</span>
+                  <span className="text-muted-foreground">{apiConfig.url}</span>
+                </div>
+              </div>
+            )}
+            
             {!apiConfig && (
-              <p className="text-destructive text-sm mt-2 font-medium">
-                ⚠️ Configure a API antes de enviar os documentos
-              </p>
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
+                <p className="text-destructive text-sm font-medium flex items-center gap-2">
+                  <span className="text-lg">⚠️</span>
+                  Configure as credenciais da API antes de enviar os documentos
+                </p>
+              </div>
             )}
           </div>
 
