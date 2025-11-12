@@ -21,16 +21,25 @@ export default function LoadingPage() {
 
     const submitToWebhook = async () => {
       try {
+        // Obter configuração da API do localStorage
+        const apiConfigStr = localStorage.getItem("api_config");
+        if (!apiConfigStr) {
+          throw new Error("Configuração da API não encontrada. Configure a API antes de enviar.");
+        }
+        
+        const apiConfig = JSON.parse(apiConfigStr);
+        const authHeader = `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`;
+        
         // Criar FormData com os arquivos
         const formData = new FormData();
         formData.append("dod", filesData.dod);
         formData.append("etp", filesData.etp);
         formData.append("tr", filesData.tr);
 
-        const response = await fetch(API_CONFIG.webhookUrl, {
+        const response = await fetch(apiConfig.url, {
           method: 'POST',
           headers: {
-            'Authorization': API_CONFIG.getAuthHeader(),
+            'Authorization': authHeader,
           },
           body: formData,
         });
