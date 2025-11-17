@@ -7,6 +7,8 @@ import { RiskAnalysis } from "@/types/risk";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 
 interface LogEntry {
   timestamp: string;
@@ -19,6 +21,7 @@ export default function LoadingPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [hasError, setHasError] = useState(false);
 
   const addLog = (type: LogEntry['type'], message: string, details?: any) => {
     const timestamp = new Date().toISOString();
@@ -189,14 +192,11 @@ export default function LoadingPage() {
           userAgent: navigator.userAgent
         });
         
+        setHasError(true);
+        
         toast.error(errorMessage, {
           duration: 5000,
         });
-        
-        // Em caso de erro, aguarda 3 segundos e volta para o início
-        setTimeout(() => {
-          navigate("/");
-        }, 3000);
       }
     };
 
@@ -207,7 +207,26 @@ export default function LoadingPage() {
     <div className="min-h-screen bg-gradient-bg">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        <LoadingScreen />
+        {!hasError && <LoadingScreen />}
+        
+        {hasError && (
+          <Card className="max-w-4xl mx-auto p-8 mb-8">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="w-16 h-16 rounded-full bg-destructive/20 flex items-center justify-center">
+                  <AlertCircle className="w-8 h-8 text-destructive" />
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-foreground">Erro no Processamento</h2>
+              <p className="text-muted-foreground">
+                Ocorreu um erro ao processar os documentos. Verifique os logs abaixo para mais detalhes.
+              </p>
+              <Button onClick={() => navigate("/")} size="lg" className="mt-4">
+                Retornar à tela inicial
+              </Button>
+            </div>
+          </Card>
+        )}
         
         {logs.length > 0 && (
           <Card className="mt-8 p-6 max-w-4xl mx-auto">
