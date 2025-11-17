@@ -54,6 +54,35 @@ export default function LoadingPage() {
         
         const authHeader = `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`;
         
+        // Teste de conectividade primeiro
+        addLog('info', 'Testando conectividade com o servidor...');
+        try {
+          const testResponse = await fetch(apiConfig.url, {
+            method: 'OPTIONS',
+            headers: {
+              'Authorization': authHeader,
+              'Access-Control-Request-Method': 'POST',
+              'Access-Control-Request-Headers': 'authorization',
+            },
+          });
+          
+          addLog('info', 'Teste de conectividade concluído', {
+            status: testResponse.status,
+            statusText: testResponse.statusText,
+            headers: Object.fromEntries(testResponse.headers.entries())
+          });
+        } catch (testError) {
+          addLog('error', 'Falha no teste de conectividade (CORS/Rede)', {
+            error: testError instanceof Error ? testError.message : String(testError),
+            possibleCauses: [
+              'CORS não configurado no servidor n8n',
+              'Webhook não está ativo',
+              'URL incorreta',
+              'Servidor indisponível'
+            ]
+          });
+        }
+        
         // Criar FormData com os arquivos
         const formData = new FormData();
         formData.append("dod", filesData.dod);
@@ -70,7 +99,8 @@ export default function LoadingPage() {
           url: apiConfig.url,
           method: 'POST',
           headers: { Authorization: 'Basic [REDACTED]' },
-          body: 'FormData com 3 arquivos'
+          body: 'FormData com 3 arquivos',
+          origin: window.location.origin
         });
 
         const response = await fetch(apiConfig.url, {
@@ -144,14 +174,43 @@ export default function LoadingPage() {
       } catch (error) {
         console.error("Erro ao processar documentos:", error);
         
-        const errorMessage = error instanceof Error 
-          ? error.message 
-          : "Erro ao processar documentos. Verifique a conexão com o servidor.";
+        let errorMessage = "Erro ao processar documentos. Verifique a conexão com o servidor.";
+        let diagnostico: string[] = [];
+        
+        if (error instanceof TypeError && error.message === 'Failed to fetch') {
+          errorMessage = "Falha na conexão com o servidor n8n";
+          diagnostico = [
+            '🔴 DIAGNÓSTICO DO ERRO:',
+            '',
+            '1. CORS (Provável causa):',
+            '   - O servidor n8n precisa permitir requisições de: ' + window.location.origin,
+            '   - Configure CORS no n8n para aceitar o domínio do Lovable',
+            '   - Permita os headers: Authorization, Content-Type',
+            '   - Permita o método: POST',
+            '',
+            '2. Webhook inativo:',
+            '   - Verifique se o workflow está ativo no n8n',
+            '   - Teste a URL diretamente no Postman',
+            '',
+            '3. URL incorreta:',
+            '   - Verifique se a URL está correta',
+            '   - URL atual: ' + localStorage.getItem("api_config")?.match(/"url":"([^"]+)"/)?.[1],
+            '',
+            '4. Autenticação:',
+            '   - Verifique se username e password estão corretos',
+            '   - Username: blueprince',
+          ];
+        } else if (error instanceof Error) {
+          errorMessage = error.message;
+        }
         
         addLog('error', 'Erro durante o processamento', {
           error: errorMessage,
           errorType: error instanceof Error ? error.name : 'Unknown',
-          stack: error instanceof Error ? error.stack : undefined
+          stack: error instanceof Error ? error.stack : undefined,
+          diagnostico: diagnostico.join('\n'),
+          origin: window.location.origin,
+          userAgent: navigator.userAgent
         });
         
         toast.error(errorMessage, {
