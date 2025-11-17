@@ -54,35 +54,6 @@ export default function LoadingPage() {
         
         const authHeader = `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`;
         
-        // Teste de conectividade primeiro
-        addLog('info', 'Testando conectividade com o servidor...');
-        try {
-          const testResponse = await fetch(apiConfig.url, {
-            method: 'OPTIONS',
-            headers: {
-              'Authorization': authHeader,
-              'Access-Control-Request-Method': 'POST',
-              'Access-Control-Request-Headers': 'authorization',
-            },
-          });
-          
-          addLog('info', 'Teste de conectividade concluído', {
-            status: testResponse.status,
-            statusText: testResponse.statusText,
-            headers: Object.fromEntries(testResponse.headers.entries())
-          });
-        } catch (testError) {
-          addLog('error', 'Falha no teste de conectividade (CORS/Rede)', {
-            error: testError instanceof Error ? testError.message : String(testError),
-            possibleCauses: [
-              'CORS não configurado no servidor n8n',
-              'Webhook não está ativo',
-              'URL incorreta',
-              'Servidor indisponível'
-            ]
-          });
-        }
-        
         // Criar FormData com os arquivos
         const formData = new FormData();
         formData.append("dod", filesData.dod);
@@ -98,9 +69,14 @@ export default function LoadingPage() {
         addLog('info', 'Enviando requisição POST...', {
           url: apiConfig.url,
           method: 'POST',
-          headers: { Authorization: 'Basic [REDACTED]' },
-          body: 'FormData com 3 arquivos',
-          origin: window.location.origin
+          bodyType: 'multipart/form-data',
+          files: {
+            dod: filesData.dod.name,
+            etp: filesData.etp.name,
+            tr: filesData.tr.name
+          },
+          origin: window.location.origin,
+          authMethod: 'Basic Auth'
         });
 
         const response = await fetch(apiConfig.url, {
