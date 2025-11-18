@@ -77,6 +77,22 @@ export default function LoadingPage() {
         formData.append("tr", filesData.tr);
         addLog('info', 'FormData preparado com 3 arquivos (dod, etp, tr)');
 
+        // Log completo da requisição
+        const requestDetails = {
+          url: apiConfig.url,
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`
+          },
+          bodyType: 'multipart/form-data',
+          files: {
+            dod: filesData.dod.name,
+            etp: filesData.etp.name,
+            tr: filesData.tr.name
+          }
+        };
+        addLog('info', 'Detalhes completos da requisição POST', requestDetails);
+
         addLog('info', `Enviando requisição POST para ${apiConfig.url}`);
         const fetchStartTime = Date.now();
 
