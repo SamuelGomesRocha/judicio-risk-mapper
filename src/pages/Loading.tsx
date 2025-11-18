@@ -78,7 +78,6 @@ export default function LoadingPage() {
             etp: filesData.etp.name,
             tr: filesData.tr.name
           },
-          origin: window.location.origin,
           authMethod: 'Basic Auth'
         });
 
@@ -188,7 +187,6 @@ export default function LoadingPage() {
           errorType: error instanceof Error ? error.name : 'Unknown',
           stack: error instanceof Error ? error.stack : undefined,
           diagnostico: diagnostico.join('\n'),
-          origin: window.location.origin,
           userAgent: navigator.userAgent
         });
         
