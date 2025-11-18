@@ -40,24 +40,45 @@ export default function LoadingPage() {
     }
 
     const submitToWebhook = async () => {
+      const startTime = Date.now();
+      
       try {
+        addLog('info', 'Iniciando processo de envio de documentos');
+        
+        // Log dos arquivos
+        addLog('info', 'Arquivos detectados', {
+          dod: { name: filesData.dod.name, size: `${(filesData.dod.size / 1024).toFixed(2)} KB`, type: filesData.dod.type },
+          etp: { name: filesData.etp.name, size: `${(filesData.etp.size / 1024).toFixed(2)} KB`, type: filesData.etp.type },
+          tr: { name: filesData.tr.name, size: `${(filesData.tr.size / 1024).toFixed(2)} KB`, type: filesData.tr.type }
+        });
+        
         // Obter configuração da API do localStorage
+        addLog('info', 'Carregando configuração da API do localStorage');
         const apiConfigStr = localStorage.getItem("api_config");
         if (!apiConfigStr) {
+          addLog('error', 'Configuração da API não encontrada no localStorage');
           toast.error("Configuração da API não encontrada. Configure a API antes de enviar.");
           navigate("/");
           return;
         }
         
         const apiConfig = JSON.parse(apiConfigStr);
+        addLog('info', 'Configuração da API carregada com sucesso', {
+          url: apiConfig.url,
+          username: apiConfig.username,
+          hasPassword: !!apiConfig.password
+        });
         
         // Criar FormData com os arquivos
+        addLog('info', 'Preparando FormData com os arquivos');
         const formData = new FormData();
         formData.append("dod", filesData.dod);
         formData.append("etp", filesData.etp);
         formData.append("tr", filesData.tr);
+        addLog('info', 'FormData preparado com 3 arquivos (dod, etp, tr)');
 
-        addLog('info', 'Enviando documentos para processamento...');
+        addLog('info', `Enviando requisição POST para ${apiConfig.url}`);
+        const fetchStartTime = Date.now();
 
         const response = await fetch(apiConfig.url, {
           method: 'POST',
@@ -67,28 +88,50 @@ export default function LoadingPage() {
           body: formData,
         });
 
+        const fetchDuration = Date.now() - fetchStartTime;
+        addLog('info', `Resposta recebida em ${(fetchDuration / 1000).toFixed(2)}s`, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: {
+            contentType: response.headers.get('content-type'),
+            contentLength: response.headers.get('content-length')
+          }
+        });
+
         if (!response.ok) {
-          const responseText = await response.text();
-          addLog('error', `Erro HTTP ${response.status}: ${response.statusText}`, { responseBody: responseText });
+          const errorBody = await response.text();
+          addLog('error', `Erro HTTP ${response.status}: ${response.statusText}`, {
+            responseBody: errorBody.substring(0, 500)
+          });
           throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
         }
 
+        addLog('info', 'Processando resposta JSON');
         const responseText = await response.text();
-        const data: RiskAnalysis[] = JSON.parse(responseText);
+        addLog('info', `Resposta recebida (${responseText.length} caracteres)`, {
+          preview: responseText.substring(0, 200)
+        });
         
-        addLog('success', 'Documentos processados com sucesso');
+        const data: RiskAnalysis[] = JSON.parse(responseText);
+        addLog('success', `JSON parseado com sucesso: ${data.length} riscos identificados`);
+        
+        const totalDuration = Date.now() - startTime;
+        addLog('success', `Processamento completo em ${(totalDuration / 1000).toFixed(2)}s`);
         
         // Navegar para a página de resultados com os dados
+        addLog('info', 'Navegando para a página de resultados');
         navigate("/results", { state: { risks: data } });
         
       } catch (error) {
         console.error("Erro ao processar documentos:", error);
         
         const errorMessage = error instanceof Error ? error.message : "Erro ao processar documentos";
+        const totalDuration = Date.now() - startTime;
         
-        addLog('error', errorMessage, {
-          error: error instanceof Error ? error.name : 'Unknown',
-          details: error instanceof Error ? error.stack : undefined
+        addLog('error', `Falha após ${(totalDuration / 1000).toFixed(2)}s: ${errorMessage}`, {
+          errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+          errorStack: error instanceof Error ? error.stack : undefined,
+          errorDetails: error
         });
         
         setHasError(true);
