@@ -82,7 +82,8 @@ export default function LoadingPage() {
           url: apiConfig.url,
           method: 'POST',
           headers: {
-            'Authorization': `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`
+            'Authorization': `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`,
+            'bypass-tunnel-reminder': 'true'
           },
           bodyType: 'multipart/form-data',
           files: {
@@ -100,6 +101,8 @@ export default function LoadingPage() {
           method: 'POST',
           headers: {
             'Authorization': `Basic ${btoa(`${apiConfig.username}:${apiConfig.password}`)}`,
+            'bypass-tunnel-reminder': 'true'
+            // IMPORTANTE: Sem Content-Type - o navegador define automaticamente com boundary
           },
           body: formData,
         });
