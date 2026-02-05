@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { API_CONFIG } from "@/config/api";
-import { RiskAnalysis } from "@/types/risk";
+import { RiskAnalysisResponse } from "@/types/risk";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -131,15 +131,21 @@ export default function LoadingPage() {
           preview: responseText.substring(0, 200)
         });
         
-        const data: RiskAnalysis[] = JSON.parse(responseText);
-        addLog('success', `JSON parseado com sucesso: ${data.length} riscos identificados`);
+        const data: RiskAnalysisResponse = JSON.parse(responseText);
+        addLog('success', `JSON parseado com sucesso: ${data.risks.length} riscos identificados`);
+        addLog('info', 'Detalhes da resposta', {
+          status: data.status,
+          project_name: data.project_name,
+          objectives_count: data.objectives.length,
+          processed_files_count: data.processed_files.length
+        });
         
         const totalDuration = Date.now() - startTime;
         addLog('success', `Processamento completo em ${(totalDuration / 1000).toFixed(2)}s`);
         
-        // Navegar para a página de resultados com os dados
+        // Navegar para a página de resultados com os dados completos
         addLog('info', 'Navegando para a página de resultados');
-        navigate("/results", { state: { risks: data } });
+        navigate("/results", { state: { analysisData: data } });
         
       } catch (error) {
         console.error("Erro ao processar documentos:", error);

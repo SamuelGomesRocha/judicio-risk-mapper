@@ -1,8 +1,15 @@
 export interface RiskAnalysis {
-  Causas: string[];
-  "Evento de risco": string;
-  Consequências: string[];
-  Controles: string[];
+  causa: string;
+  evento_de_risco: string;
+  consequencia: string;
+}
+
+export interface RiskAnalysisResponse {
+  status: string;
+  project_name: string;
+  objectives: string[];
+  risks: RiskAnalysis[];
+  processed_files: string[];
 }
 
 export interface UploadedFiles {

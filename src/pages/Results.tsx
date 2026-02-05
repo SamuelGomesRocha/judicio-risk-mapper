@@ -2,42 +2,47 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { RiskTable } from "@/components/RiskTable";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
-import { RiskAnalysis } from "@/types/risk";
+import { RiskAnalysis, RiskAnalysisResponse } from "@/types/risk";
 
 // Mock data - será substituído pelos dados reais da API
-const MOCK_DATA: RiskAnalysis[] = [
-  {
-    "Causas": [
-      "Ausência de informações detalhadas sobre o objeto da contratação no DOD."
-    ],
-    "Evento de risco": "Dificuldade em definir claramente os requisitos e escopo da contratação.",
-    "Consequências": [
-      "Seleção inadequada de fornecedores, risco de aditivos contratuais por escopo mal definido, e potencial de entrega de um produto/serviço que não atende integralmente às necessidades do TJGO."
-    ],
-    "Controles": [
-      "Revisão e validação detalhada do Documento de Oficialização das Demandas (DOD) por equipe multidisciplinar antes da elaboração do Termo de Referência (TR) ou Projeto Básico (PB);",
-      "Realização de reuniões de alinhamento com as áreas demandantes para detalhar as necessidades, objetivos e entregas esperadas do objeto da contratação, registrando formalmente as decisões;"
-    ]
-  },
-  {
-    "Causas": [
-      "Falta de detalhamento sobre a necessidade específica e a justificativa para a contratação no ETP."
-    ],
-    "Evento de risco": "Incerteza sobre o real valor agregado da contratação e sua aderência aos objetivos estratégicos do TJGO.",
-    "Consequências": [
-      "Possível contratação de solução subutilizada ou redundante, desperdício de recursos públicos e oportunidade perdida para otimizar processos."
-    ],
-    "Controles": []
-  }
-];
+const MOCK_DATA: RiskAnalysisResponse = {
+  status: "success",
+  project_name: "Aquisição de solução de armazenamento all flash",
+  objectives: [
+    "Garantir alta performance e escalabilidade na infraestrutura de armazenamento de dados para suportar o crescimento estimado para os próximos 05 anos.",
+    "Mitigar o risco de indisponibilidade e perda de dados devido à saturação da capacidade e ao fim do suporte do equipamento atual.",
+    "Melhorar o desempenho e a disponibilidade dos sistemas críticos do TJGO, como Projudi/PJD e bancos de dados.",
+    "Aumentar a segurança cibernética e a proteção de dados sensíveis através de uma infraestrutura moderna e resiliente.",
+    "Otimizar a experiência do usuário final, garantindo acessos mais rápidos e eficientes aos sistemas e dados."
+  ],
+  risks: [
+    {
+      causa: "Arquitetura do equipamento com capacidade de processamento insuficiente para a carga de trabalho institucional; Adição de novos discos implicando aumento da carga de I/O gerenciada pelas controladoras.",
+      evento_de_risco: "Saturação do processamento das controladoras do novo storage.",
+      consequencia: "Degradação do desempenho geral do sistema; Aumento inaceitável da latência; Comprometimento dos serviços prestados a servidores, magistrados e usuários externos; Incapacidade de absorver o aumento da carga de trabalho institucional; Incapacidade de prover a baixa latência requerida pelos sistemas de missão crítica."
+    },
+    {
+      causa: "Aquisição de um modelo de storage com as mesmas características técnicas do atual, sem resolver o gargalo estrutural de desempenho; Arquitetura de nuvem inerentemente adiciona latência devido à distância física e à pilha de rede.",
+      evento_de_risco: "Falha na garantia de baixa latência e alto IOPS para sistemas de missão crítica.",
+      consequencia: "Latência inaceitável para bancos de dados; Risco à missão crítica dos sistemas judiciais (PROJUDI, PJD); Comprometimento do funcionamento de aplicações; Risco de perda de dados."
+    }
+  ],
+  processed_files: [
+    "1. Documento de Oficializacao da Demanda.pdf",
+    "2. Estudo Tecnico Preliminar.pdf",
+    "3. Termo de Referencia - v7 - Joao.pdf"
+  ]
+};
 
 export default function ResultsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   
   // Em produção, você pegaria os dados do location.state
-  const risks = location.state?.risks || MOCK_DATA;
+  const analysisData = location.state?.analysisData || MOCK_DATA;
+  const { project_name, objectives, risks, processed_files } = analysisData;
 
   const handleExport = () => {
     // Implementar exportação para CSV ou Excel
@@ -78,6 +83,38 @@ export default function ResultsPage() {
           </Button>
         </div>
 
+        {/* Project Metadata Section */}
+        <Card className="mb-8 p-6">
+          <div className="space-y-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">{project_name}</h1>
+            </div>
+            
+            <div>
+              <h2 className="text-lg font-semibold text-foreground mb-3">Objetivos do Projeto</h2>
+              <ul className="space-y-2">
+                {objectives.map((objective, idx) => (
+                  <li key={idx} className="flex gap-3 text-sm">
+                    <span className="text-blue-600 font-bold mt-0.5 flex-shrink-0">•</span>
+                    <span>{objective}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {processed_files && processed_files.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Documentos Processados</h3>
+                <ul className="space-y-1">
+                  {processed_files.map((file, idx) => (
+                    <li key={idx} className="text-xs text-muted-foreground">{file}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </Card>
+
         <RiskTable risks={risks} />
       </main>
     </div>
@@ -85,12 +122,11 @@ export default function ResultsPage() {
 }
 
 function generateCSV(risks: RiskAnalysis[]): string {
-  const headers = ["Evento de Risco", "Causas", "Consequências", "Controles"];
+  const headers = ["Evento de Risco", "Causa", "Consequência"];
   const rows = risks.map(risk => [
-    risk["Evento de risco"],
-    risk.Causas.join(" | "),
-    risk.Consequências.join(" | "),
-    risk.Controles.join(" | ")
+    risk.evento_de_risco,
+    risk.causa,
+    risk.consequencia
   ]);
 
   const csvRows = [
