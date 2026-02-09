@@ -20,7 +20,7 @@ export const RiskTable = ({ risks }: RiskTableProps) => {
           Análise de Riscos Identificados
         </h2>
         <div className="text-sm text-muted-foreground">
-          Total: {risks.length} risco(s) identificado(s)
+          Total: {risks.length} de possíveis risco(s) identificado(s)
         </div>
       </div>
 
@@ -43,7 +43,7 @@ export const RiskTable = ({ risks }: RiskTableProps) => {
                   <ul className="space-y-2">
                     {risk.causa.map((c, idx) => (
                       <li key={idx} className="text-sm flex gap-2">
-                        <span className="text-amber-600 font-bold">•</span>
+                        <span className="text-gray-600 font-bold">{idx+1}{")"}</span>
                         <span>{c}</span>
                       </li>
                     ))}
@@ -53,7 +53,7 @@ export const RiskTable = ({ risks }: RiskTableProps) => {
                   <ul className="space-y-2">
                     {risk.consequencia.map((cons, idx) => (
                       <li key={idx} className="text-sm flex gap-2">
-                        <span className="text-red-600 font-bold">•</span>
+                        <span className="text-black-600 font-bold">{idx+1}{")"}</span>
                         <span>{cons}</span>
                       </li>
                     ))}

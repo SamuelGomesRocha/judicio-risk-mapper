@@ -24,6 +24,7 @@ const apiConfigSchema = z.object({
   url: z.string().url({ message: "URL inválida" }).min(1, { message: "URL é obrigatória" }),
   username: z.string().min(1, { message: "Usuário é obrigatório" }),
   password: z.string().min(1, { message: "Senha é obrigatória" }),
+  aikey: z.string().min(1, { message: "Chave de API da IA é obrigatória" }),
 });
 
 export type ApiConfig = z.infer<typeof apiConfigSchema>;
@@ -42,6 +43,7 @@ export function ApiConfigModal({ open, onOpenChange, onSave, initialConfig }: Ap
       url: "",
       username: "",
       password: "",
+      aikey: "",
     },
   });
 
@@ -112,6 +114,24 @@ export function ApiConfigModal({ open, onOpenChange, onSave, initialConfig }: Ap
                     <Input 
                       type="password" 
                       placeholder="Digite a senha" 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="aikey"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Token IA</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Digite o token de acesso à IA" 
                       {...field} 
                     />
                   </FormControl>

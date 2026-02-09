@@ -70,7 +70,7 @@ export default function ResultsPage() {
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "analise_riscos.csv");
+    link.setAttribute("download", `analise_riscos____${project_name.replace(/\s+/g, '_')}.csv`);
     link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
