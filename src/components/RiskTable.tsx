@@ -40,16 +40,24 @@ export const RiskTable = ({ risks }: RiskTableProps) => {
                   {risk.evento_de_risco}
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm flex gap-2">
-                    <span className="text-amber-600 font-bold">•</span>
-                    <span>{risk.causa}</span>
-                  </div>
+                  <ul className="space-y-2">
+                    {risk.causa.map((c, idx) => (
+                      <li key={idx} className="text-sm flex gap-2">
+                        <span className="text-amber-600 font-bold">•</span>
+                        <span>{c}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </TableCell>
                 <TableCell>
-                  <div className="text-sm flex gap-2">
-                    <span className="text-red-600 font-bold">•</span>
-                    <span>{risk.consequencia}</span>
-                  </div>
+                  <ul className="space-y-2">
+                    {risk.consequencia.map((cons, idx) => (
+                      <li key={idx} className="text-sm flex gap-2">
+                        <span className="text-red-600 font-bold">•</span>
+                        <span>{cons}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </TableCell>
               </TableRow>
             ))}

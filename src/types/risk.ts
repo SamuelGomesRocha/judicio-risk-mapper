@@ -1,7 +1,7 @@
 export interface RiskAnalysis {
-  causa: string;
+  causa: string[];
   evento_de_risco: string;
-  consequencia: string;
+  consequencia: string[];
 }
 
 export interface RiskAnalysisResponse {

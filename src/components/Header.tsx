@@ -9,7 +9,7 @@ export const Header = () => {
             <Scale className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">RISCOTRON</h1>
+            <h1 className="text-xl font-bold text-foreground">Sistema de Avaliação de Riscos</h1>
             <p className="text-sm text-muted-foreground">
               Tribunal de Justiça do Estado de Goiás
             </p>

@@ -9,8 +9,9 @@ import { RiskAnalysis, RiskAnalysisResponse } from "@/types/risk";
 // Mock data - será substituído pelos dados reais da API
 const MOCK_DATA: RiskAnalysisResponse = {
   status: "success",
-  project_name: "Aquisição de solução de armazenamento all flash",
+  project_name: "Nome do projeto a ser aplicado | MOCK DATA - Em produção, esta lista será gerada dinamicamente com base nos objetivos extraídos pela API",
   objectives: [
+    "MOCK DATA - Em produção, esta lista será gerada dinamicamente com base nos objetivos extraídos pela API",
     "Garantir alta performance e escalabilidade na infraestrutura de armazenamento de dados para suportar o crescimento estimado para os próximos 05 anos.",
     "Mitigar o risco de indisponibilidade e perda de dados devido à saturação da capacidade e ao fim do suporte do equipamento atual.",
     "Melhorar o desempenho e a disponibilidade dos sistemas críticos do TJGO, como Projudi/PJD e bancos de dados.",
@@ -19,20 +20,38 @@ const MOCK_DATA: RiskAnalysisResponse = {
   ],
   risks: [
     {
-      causa: "Arquitetura do equipamento com capacidade de processamento insuficiente para a carga de trabalho institucional; Adição de novos discos implicando aumento da carga de I/O gerenciada pelas controladoras.",
+      causa: [
+        "Arquitetura do equipamento com capacidade de processamento insuficiente para a carga de trabalho institucional",
+        "Adição de novos discos implicando aumento da carga de I/O gerenciada pelas controladoras"
+      ],
       evento_de_risco: "Saturação do processamento das controladoras do novo storage.",
-      consequencia: "Degradação do desempenho geral do sistema; Aumento inaceitável da latência; Comprometimento dos serviços prestados a servidores, magistrados e usuários externos; Incapacidade de absorver o aumento da carga de trabalho institucional; Incapacidade de prover a baixa latência requerida pelos sistemas de missão crítica."
+      consequencia: [
+        "Degradação do desempenho geral do sistema",
+        "Aumento inaceitável da latência",
+        "Comprometimento dos serviços prestados a servidores, magistrados e usuários externos",
+        "Incapacidade de absorver o aumento da carga de trabalho institucional",
+        "Incapacidade de prover a baixa latência requerida pelos sistemas de missão crítica"
+      ]
     },
     {
-      causa: "Aquisição de um modelo de storage com as mesmas características técnicas do atual, sem resolver o gargalo estrutural de desempenho; Arquitetura de nuvem inerentemente adiciona latência devido à distância física e à pilha de rede.",
+      causa: [
+        "Aquisição de um modelo de storage com as mesmas características técnicas do atual, sem resolver o gargalo estrutural de desempenho",
+        "Arquitetura de nuvem inerentemente adiciona latência devido à distância física e à pilha de rede"
+      ],
       evento_de_risco: "Falha na garantia de baixa latência e alto IOPS para sistemas de missão crítica.",
-      consequencia: "Latência inaceitável para bancos de dados; Risco à missão crítica dos sistemas judiciais (PROJUDI, PJD); Comprometimento do funcionamento de aplicações; Risco de perda de dados."
+      consequencia: [
+        "Latência inaceitável para bancos de dados",
+        "Risco à missão crítica dos sistemas judiciais (PROJUDI, PJD)",
+        "Comprometimento do funcionamento de aplicações",
+        "Risco de perda de dados"
+      ]
     }
   ],
   processed_files: [
+    "MOCK DATA - Em produção, esta lista será gerada dinamicamente com base nos arquivos processados pela API",
     "1. Documento de Oficializacao da Demanda.pdf",
     "2. Estudo Tecnico Preliminar.pdf",
-    "3. Termo de Referencia - v7 - Joao.pdf"
+    "3. Termo de Referencia.pdf "
   ]
 };
 
@@ -125,8 +144,8 @@ function generateCSV(risks: RiskAnalysis[]): string {
   const headers = ["Evento de Risco", "Causa", "Consequência"];
   const rows = risks.map(risk => [
     risk.evento_de_risco,
-    risk.causa,
-    risk.consequencia
+    risk.causa.join(" | "),
+    risk.consequencia.join(" | ")
   ]);
 
   const csvRows = [
