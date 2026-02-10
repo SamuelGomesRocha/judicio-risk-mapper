@@ -4,6 +4,7 @@ import { Header } from "@/components/Header";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { API_CONFIG } from "@/config/api";
 import { RiskAnalysisResponse } from "@/types/risk";
+import { ConfigSettings } from "@/types/config";
 import { toast } from "sonner";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -31,6 +32,7 @@ export default function LoadingPage() {
 
   useEffect(() => {
     const filesData = location.state?.files;
+    const configData = location.state?.config as ConfigSettings | undefined;
 
     if (!filesData || !filesData.dod || !filesData.etp || !filesData.tr) {
       addLog('error', 'Arquivos não encontrados');
@@ -52,21 +54,26 @@ export default function LoadingPage() {
           tr: { name: filesData.tr.name, size: `${(filesData.tr.size / 1024).toFixed(2)} KB`, type: filesData.tr.type }
         });
         
-        // Obter configuração da API do localStorage
-        addLog('info', 'Carregando configuração da API do localStorage');
-        const apiConfigStr = localStorage.getItem("api_config");
-        if (!apiConfigStr) {
-          addLog('error', 'Configuração da API não encontrada no localStorage');
-          toast.error("Configuração da API não encontrada. Configure a API antes de enviar.");
-          navigate("/");
-          return;
+        // Usar configuração do state ou carregar do localStorage
+        let apiConfig = configData;
+        
+        if (!apiConfig) {
+          addLog('info', 'Carregando configuração do localStorage');
+          const configStr = localStorage.getItem("app_config");
+          if (!configStr) {
+            addLog('error', 'Configuração não encontrada no localStorage');
+            toast.error("Configuração não encontrada. Configure a aplicação antes de enviar.");
+            navigate("/");
+            return;
+          }
+          apiConfig = JSON.parse(configStr);
         }
         
-        const apiConfig = JSON.parse(apiConfigStr);
-        addLog('info', 'Configuração da API carregada com sucesso', {
+        addLog('info', 'Configuração carregada com sucesso', {
           url: apiConfig.url,
           username: apiConfig.username,
-          hasPassword: !!apiConfig.password
+          hasPassword: !!apiConfig.password,
+          riskLevelsCount: apiConfig.riskLevels.length
         });
         
         // Criar FormData com os arquivos
@@ -75,7 +82,14 @@ export default function LoadingPage() {
         formData.append("dod", filesData.dod);
         formData.append("etp", filesData.etp);
         formData.append("tr", filesData.tr);
-        addLog('info', 'FormData preparado com 3 arquivos (dod, etp, tr)');
+        
+        // Adicionar configuração de escalas de risco
+        formData.append("risk_scales", JSON.stringify({
+          levels: apiConfig.riskLevels,
+          timestamp: new Date().toISOString()
+        }));
+        
+        addLog('info', 'FormData preparado com 3 arquivos + configuração de escalas');
 
         // Log completo da requisição
         const requestDetails = {
@@ -90,7 +104,8 @@ export default function LoadingPage() {
             dod: filesData.dod.name,
             etp: filesData.etp.name,
             tr: filesData.tr.name
-          }
+          },
+          riskScales: apiConfig.riskLevels
         };
         addLog('info', 'Detalhes completos da requisição POST', requestDetails);
 
@@ -145,7 +160,7 @@ export default function LoadingPage() {
         
         // Navegar para a página de resultados com os dados completos
         addLog('info', 'Navegando para a página de resultados');
-        navigate("/results", { state: { analysisData: data } });
+        navigate("/results", { state: { analysisData: data, riskColors: configData?.riskColors || apiConfig.riskColors } });
         
       } catch (error) {
         console.error("Erro ao processar documentos:", error);

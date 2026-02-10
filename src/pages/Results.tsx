@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
 import { RiskAnalysis, RiskAnalysisResponse } from "@/types/risk";
+import { RiskColorConfig, DEFAULT_RISK_COLORS } from "@/types/risk-colors";
 
 // Mock data - será substituído pelos dados reais da API
 const MOCK_DATA: RiskAnalysisResponse = {
@@ -61,6 +62,7 @@ export default function ResultsPage() {
   
   // Em produção, você pegaria os dados do location.state
   const analysisData = location.state?.analysisData || MOCK_DATA;
+  const riskColors = location.state?.riskColors || DEFAULT_RISK_COLORS;
   const { project_name, objectives, risks, processed_files } = analysisData;
 
   const handleExport = () => {
@@ -134,18 +136,21 @@ export default function ResultsPage() {
           </div>
         </Card>
 
-        <RiskTable risks={risks} />
+        <RiskTable risks={risks} riskColors={riskColors} />
       </main>
     </div>
   );
 }
 
 function generateCSV(risks: RiskAnalysis[]): string {
-  const headers = ["Evento de Risco", "Causa", "Consequência"];
+  const headers = ["Evento de Risco", "Causa", "Consequência", "Probabilidade", "Impacto", "Risco Inerente"];
   const rows = risks.map(risk => [
     risk.evento_de_risco,
     risk.causa.join(" | "),
-    risk.consequencia.join(" | ")
+    risk.consequencia.join(" | "),
+    risk.probabilidade || "",
+    risk.impacto || "",
+    risk.risco_inerente || ""
   ]);
 
   const csvRows = [

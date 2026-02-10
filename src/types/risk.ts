@@ -2,6 +2,12 @@ export interface RiskAnalysis {
   causa: string[];
   evento_de_risco: string;
   consequencia: string[];
+  probabilidade?: number;
+  nivel_probabilidade?: string;
+  impacto?: number;
+  nivel_impacto?: string;
+  risco_inerente?: number;
+  nivel_risco_inerente?: string;
 }
 
 export interface RiskAnalysisResponse {

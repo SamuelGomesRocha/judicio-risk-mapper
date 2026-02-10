@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { UploadedFiles } from "@/types/risk";
+import { ConfigSettings, DEFAULT_RISK_SCALE } from "@/types/config";
 import { Header } from "@/components/Header";
 import { FileUploadCard } from "@/components/FileUploadCard";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FileText, Upload, Settings } from "lucide-react";
 import { toast } from "sonner";
-import { ApiConfigModal, ApiConfig } from "@/components/ApiConfigModal";
+import { ConfigModal } from "@/components/ConfigModal";
 
-const API_CONFIG_KEY = "api_config";
+const CONFIG_KEY = "app_config";
 
 export default function UploadPage() {
   const navigate = useNavigate();
@@ -18,33 +19,33 @@ export default function UploadPage() {
     etp: null,
     tr: null,
   });
-  const [showApiModal, setShowApiModal] = useState(false);
-  const [apiConfig, setApiConfig] = useState<ApiConfig | null>(null);
+  const [showConfigModal, setShowConfigModal] = useState(false);
+  const [config, setConfig] = useState<ConfigSettings | null>(null);
 
   useEffect(() => {
     // Carregar configuração salva do localStorage
-    const savedConfig = localStorage.getItem(API_CONFIG_KEY);
+    const savedConfig = localStorage.getItem(CONFIG_KEY);
     if (savedConfig) {
-      setApiConfig(JSON.parse(savedConfig));
+      setConfig(JSON.parse(savedConfig));
     } else {
       // Se não tem configuração, abrir o modal automaticamente
-      setShowApiModal(true);
+      setShowConfigModal(true);
     }
   }, []);
 
   const allFilesUploaded = files.dod && files.etp && files.tr;
-  const canSubmit = allFilesUploaded && apiConfig;
+  const canSubmit = allFilesUploaded && config;
 
-  const handleSaveApiConfig = (config: ApiConfig) => {
-    localStorage.setItem(API_CONFIG_KEY, JSON.stringify(config));
-    setApiConfig(config);
-    toast.success("Configuração da API salva com sucesso!");
+  const handleSaveConfig = (newConfig: ConfigSettings) => {
+    localStorage.setItem(CONFIG_KEY, JSON.stringify(newConfig));
+    setConfig(newConfig);
+    toast.success("Configurações salvas com sucesso!");
   };
 
   const handleSubmit = async () => {
-    if (!apiConfig) {
-      toast.error("Configure a API antes de enviar os arquivos");
-      setShowApiModal(true);
+    if (!config) {
+      toast.error("Configure a aplicação antes de enviar os arquivos");
+      setShowConfigModal(true);
       return;
     }
 
@@ -54,14 +55,16 @@ export default function UploadPage() {
     }
 
     try {
-      // Navigate to loading screen with files
+      // Navigate to loading screen with files and config
       navigate("/loading", { 
         state: { 
           files: {
             dod: files.dod,
             etp: files.etp,
             tr: files.tr
-          }
+          },
+          config: config,
+          riskColors: config?.riskColors
         } 
       });
     } catch (error) {
@@ -74,11 +77,11 @@ export default function UploadPage() {
     <div className="min-h-screen bg-gradient-bg">
       <Header />
       
-      <ApiConfigModal 
-        open={showApiModal}
-        onOpenChange={setShowApiModal}
-        onSave={handleSaveApiConfig}
-        initialConfig={apiConfig || undefined}
+      <ConfigModal 
+        open={showConfigModal}
+        onOpenChange={setShowConfigModal}
+        onSave={handleSaveConfig}
+        initialConfig={config || undefined}
       />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
@@ -100,30 +103,30 @@ export default function UploadPage() {
               </div>
               
               <Button
-                variant={apiConfig ? "outline" : "default"}
-                onClick={() => setShowApiModal(true)}
+                variant={config ? "outline" : "default"}
+                onClick={() => setShowConfigModal(true)}
                 className="flex items-center gap-2 flex-shrink-0"
               >
                 <Settings className="w-4 h-4" />
-                {apiConfig ? "Reconfigurar API" : "Configurar API"}
+                {config ? "Reconfigurar" : "Configurar"}
               </Button>
             </div>
 
-            {apiConfig && (
+            {config && (
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-4">
                 <div className="flex items-center gap-2 text-sm">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-foreground font-medium">API Configurada:</span>
-                  <span className="text-muted-foreground">{apiConfig.url}</span>
+                  <span className="text-foreground font-medium">Configurações Ativas:</span>
+                  <span className="text-muted-foreground">{config.url}</span>
                 </div>
               </div>
             )}
             
-            {!apiConfig && (
+            {!config && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
                 <p className="text-destructive text-sm font-medium flex items-center gap-2">
                   <span className="text-lg">⚠️</span>
-                  Configure as credenciais da API antes de enviar os documentos
+                  Configure a aplicação (API e escalas de risco) antes de enviar os documentos
                 </p>
               </div>
             )}
