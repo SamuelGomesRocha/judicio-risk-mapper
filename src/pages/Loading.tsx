@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { RiskAssessmentDisclaimer } from "@/components/RiskAssessmentDisclaimer";
 import { API_CONFIG } from "@/config/api";
 import { RiskAnalysisResponse } from "@/types/risk";
 import { ConfigSettings } from "@/types/config";
@@ -240,6 +241,8 @@ export default function LoadingPage() {
             </ScrollArea>
           </Card>
         )}
+
+        <RiskAssessmentDisclaimer />
       </div>
     </div>
   );

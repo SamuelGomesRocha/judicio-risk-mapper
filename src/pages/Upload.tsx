@@ -4,6 +4,7 @@ import { UploadedFiles } from "@/types/risk";
 import { ConfigSettings, DEFAULT_RISK_SCALE } from "@/types/config";
 import { Header } from "@/components/Header";
 import { FileUploadCard } from "@/components/FileUploadCard";
+import { RiskAssessmentDisclaimer } from "@/components/RiskAssessmentDisclaimer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FileText, Upload, Settings } from "lucide-react";
@@ -171,10 +172,11 @@ export default function UploadPage() {
         <div className="mt-6 p-4 bg-primary-light border border-primary/20 rounded-lg">
           <p className="text-sm text-foreground">
             <strong className="text-primary">Nota:</strong> Os três arquivos devem estar em formato PDF 
-            e serão enviados simultaneamente para análise. O sistema realizará uma análise de riscos 
-            baseada nas diretrizes da ISO 31000.
+            e serão enviados simultaneamente para análise.
           </p>
         </div>
+
+        <RiskAssessmentDisclaimer />
       </main>
     </div>
   );

@@ -1,3 +1,8 @@
+export interface Controle {
+  nome: string;
+  detalhe: string;
+}
+
 export interface RiskAnalysis {
   causa: string[];
   evento_de_risco: string;
@@ -8,6 +13,7 @@ export interface RiskAnalysis {
   nivel_impacto?: string;
   risco_inerente?: number;
   nivel_risco_inerente?: string;
+  controles?: Controle[];
 }
 
 export interface RiskAnalysisResponse {

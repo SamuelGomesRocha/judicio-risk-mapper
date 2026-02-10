@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { RiskTable } from "@/components/RiskTable";
+import { RiskAssessmentDisclaimer } from "@/components/RiskAssessmentDisclaimer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
@@ -137,25 +138,33 @@ export default function ResultsPage() {
         </Card>
 
         <RiskTable risks={risks} riskColors={riskColors} />
+
+        <RiskAssessmentDisclaimer />
       </main>
     </div>
   );
 }
 
 function generateCSV(risks: RiskAnalysis[]): string {
-  const headers = ["Evento de Risco", "Causa", "Consequência", "Probabilidade", "Impacto", "Risco Inerente"];
-  const rows = risks.map(risk => [
-    risk.evento_de_risco,
-    risk.causa.join(" | "),
-    risk.consequencia.join(" | "),
-    risk.probabilidade || "",
-    risk.impacto || "",
-    risk.risco_inerente || ""
-  ]);
+  const headers = ["Evento de Risco", "Causa", "Consequência", "Probabilidade", "Impacto", "Risco Inerente", "Controles", "Referências de Controles"];
+  const rows = risks.map(risk => {
+    const controleNomes = risk.controles?.map(c => c.nome).join(" | ") || "";
+    const controleDetalhes = risk.controles?.map(c => c.detalhe).join(" | ") || "";
+    return [
+      risk.evento_de_risco,
+      risk.causa.join(" | "),
+      risk.consequencia.join(" | "),
+      risk.probabilidade || "",
+      risk.impacto || "",
+      risk.risco_inerente || "",
+      controleNomes,
+      controleDetalhes
+    ];
+  });
 
   const csvRows = [
     headers.join(","),
-    ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+    ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
   ];
 
   return csvRows.join("\n");
