@@ -103,57 +103,57 @@ export const RiskTable = ({ risks, riskColors, onRisksChange }: RiskTableProps) 
       </div>
 
       <div className="rounded-lg border border-border bg-card w-full">
-        <Table className="w-full">
+        <Table className="w-full table-auto">
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="font-bold text-left px-4 py-3">Evento de Risco</TableHead>
-              <TableHead className="font-bold text-left px-4 py-3">Causas</TableHead>
-              <TableHead className="font-bold text-left px-4 py-3">Consequências</TableHead>
-              <TableHead className="font-bold text-center px-4 py-3">Probabilidade</TableHead>
-              <TableHead className="font-bold text-center px-4 py-3">Impacto</TableHead>
-              <TableHead className="font-bold text-center px-4 py-3">Risco Inerente</TableHead>
-              <TableHead className="font-bold text-left px-4 py-3">Controles</TableHead>
-              <TableHead className="font-bold text-center px-4 py-3">Fator de Controle</TableHead>
-              <TableHead className="font-bold text-center px-4 py-3">Nível de Risco Residual</TableHead>
+              <TableHead className="font-bold text-left px-2 py-2 text-xs whitespace-nowrap">Evento de Risco</TableHead>
+              <TableHead className="font-bold text-left px-2 py-2 text-xs whitespace-nowrap">Causas</TableHead>
+              <TableHead className="font-bold text-left px-2 py-2 text-xs whitespace-nowrap">Consequências</TableHead>
+              <TableHead className="font-bold text-center px-2 py-2 text-xs whitespace-nowrap">Probabilidade</TableHead>
+              <TableHead className="font-bold text-center px-2 py-2 text-xs whitespace-nowrap">Impacto</TableHead>
+              <TableHead className="font-bold text-center px-2 py-2 text-xs whitespace-nowrap">Risco Inerente</TableHead>
+              <TableHead className="font-bold text-left px-2 py-2 text-xs whitespace-nowrap">Controles</TableHead>
+              <TableHead className="font-bold text-center px-2 py-2 text-xs whitespace-nowrap">Fator de Controle</TableHead>
+              <TableHead className="font-bold text-center px-2 py-2 text-xs whitespace-nowrap">Nível de Risco Residual</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {localRisks.map((risk, index) => (
               <TableRow key={index} className="align-top">
-                <TableCell className="font-medium text-sm px-4 py-3">
+                <TableCell className="font-medium text-xs px-2 py-2 max-w-xs">
                   <EditableCell
                     value={risk.evento_de_risco}
                     onSave={(value) => handleUpdateRisk(index, { ...risk, evento_de_risco: value })}
                   />
                 </TableCell>
-                <TableCell className="text-sm px-4 py-3">
+                <TableCell className="text-xs px-2 py-2 max-w-sm">
                   <EditableList
                     items={risk.causa}
                     onSave={(items) => handleUpdateRisk(index, { ...risk, causa: items })}
                   />
                 </TableCell>
-                <TableCell className="text-sm px-4 py-3">
+                <TableCell className="text-xs px-2 py-2 max-w-sm">
                   <EditableList
                     items={risk.consequencia}
                     onSave={(items) => handleUpdateRisk(index, { ...risk, consequencia: items })}
                   />
                 </TableCell>
-                <TableCell className="text-center text-sm px-4 py-3">
+                <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   {renderLevelBadge(risk.nivel_probabilidade, riskColors)}
                 </TableCell>
-                <TableCell className="text-center text-sm px-4 py-3">
+                <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   {renderLevelBadge(risk.nivel_impacto, riskColors)}
                 </TableCell>
-                <TableCell className="text-center text-sm px-4 py-3">
+                <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   {renderLevelBadge(risk.nivel_risco_inerente, riskColors)}
                 </TableCell>
-                <TableCell className="text-sm px-4 py-3">
+                <TableCell className="text-xs px-2 py-2 max-w-md">
                   <EditableControlsList
                     items={risk.controles || []}
                     onSave={(items) => handleUpdateRisk(index, { ...risk, controles: items })}
                   />
                 </TableCell>
-                <TableCell className="text-center text-sm px-4 py-3">
+                <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -167,7 +167,7 @@ export const RiskTable = ({ risks, riskColors, onRisksChange }: RiskTableProps) 
                     </Tooltip>
                   </TooltipProvider>
                 </TableCell>
-                <TableCell className="text-center text-sm px-4 py-3">
+                <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>

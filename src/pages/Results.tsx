@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { RiskTable } from "@/components/RiskTable";
 import { RiskAssessmentDisclaimer } from "@/components/RiskAssessmentDisclaimer";
+import { ScalesModal } from "@/components/ScalesModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
@@ -84,8 +85,8 @@ export default function ResultsPage() {
     <div className="min-h-screen bg-gradient-bg">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="flex items-center justify-between mb-6">
+      <main className="mx-auto px-4 py-8 w-full">
+        <div className="flex items-center justify-between mb-6 gap-2">
           <Button
             variant="outline"
             onClick={() => navigate("/")}
@@ -95,14 +96,17 @@ export default function ResultsPage() {
             Nova Análise
           </Button>
           
-          <Button
-            variant="secondary"
-            onClick={handleExport}
-            className="gap-2"
-          >
-            <Download className="w-4 h-4" />
-            Exportar Resultados
-          </Button>
+          <div className="flex items-center gap-2">
+            <ScalesModal />
+            <Button
+              variant="secondary"
+              onClick={handleExport}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Exportar Resultados
+            </Button>
+          </div>
         </div>
 
         {/* Project Metadata Section */}
