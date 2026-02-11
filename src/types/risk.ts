@@ -14,6 +14,9 @@ export interface RiskAnalysis {
   risco_inerente?: number;
   nivel_risco_inerente?: string;
   controles?: Controle[];
+  nivel_controle?: string;
+  risco_residual?: number;
+  nivel_risco_residual?: string;
 }
 
 export interface RiskAnalysisResponse {

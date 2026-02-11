@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RiskAnalysis } from "@/types/risk";
 import { RiskColorConfig, getColorForLevel } from "@/types/risk-colors";
+import { ControlLevel, getControlLevel } from "@/types/control-levels";
 import { EditableCell } from "@/components/EditableCell";
 import { EditableList } from "@/components/EditableList";
 import { EditableControlsList } from "@/components/EditableControlsList";
@@ -35,6 +36,43 @@ export const RiskTable = ({ risks, riskColors, onRisksChange }: RiskTableProps) 
     if (onRisksChange) {
       onRisksChange(newRisks);
     }
+  };
+
+  // Helper function to render control level badge
+  const renderControlLevelBadge = (level: string | undefined, colors?: RiskColorConfig) => {
+    if (!level) return <span className="text-muted-foreground">—</span>;
+    
+    const controlLevel = getControlLevel(level);
+    if (!controlLevel) return <span className="text-muted-foreground">—</span>;
+    
+    const bgColor = colors ? getColorForLevel(level, colors) : "#F97316";
+    
+    return (
+      <span
+        className="inline-block px-3 py-1 rounded-full text-sm font-semibold text-white whitespace-nowrap"
+        style={{ backgroundColor: bgColor }}
+      >
+        {level}
+      </span>
+    );
+  };
+
+  // Helper function to render control level tooltip content
+  const renderControlLevelTooltip = (level: string | undefined) => {
+    if (!level) return "—";
+    
+    const controlLevel = getControlLevel(level);
+    if (!controlLevel) return "—";
+    
+    return (
+      <div className="max-w-xs">
+        <p className="font-semibold mb-1">{controlLevel.name}</p>
+        <p className="text-xs">{controlLevel.description}</p>
+        <p className="text-xs mt-2">
+          <span className="font-semibold">Fator:</span> {controlLevel.factor}
+        </p>
+      </div>
+    );
   };
 
   // Helper function to render level badge
@@ -75,6 +113,8 @@ export const RiskTable = ({ risks, riskColors, onRisksChange }: RiskTableProps) 
               <TableHead className="font-bold text-center px-4 py-3">Impacto</TableHead>
               <TableHead className="font-bold text-center px-4 py-3">Risco Inerente</TableHead>
               <TableHead className="font-bold text-left px-4 py-3">Controles</TableHead>
+              <TableHead className="font-bold text-center px-4 py-3">Fator de Controle</TableHead>
+              <TableHead className="font-bold text-center px-4 py-3">Nível de Risco Residual</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,6 +152,37 @@ export const RiskTable = ({ risks, riskColors, onRisksChange }: RiskTableProps) 
                     items={risk.controles || []}
                     onSave={(items) => handleUpdateRisk(index, { ...risk, controles: items })}
                   />
+                </TableCell>
+                <TableCell className="text-center text-sm px-4 py-3">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-help">
+                          {renderControlLevelBadge(risk.nivel_controle, riskColors)}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {renderControlLevelTooltip(risk.nivel_controle)}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </TableCell>
+                <TableCell className="text-center text-sm px-4 py-3">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="cursor-help">
+                          {renderLevelBadge(risk.nivel_risco_residual, riskColors)}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {risk.risco_residual !== undefined 
+                          ? `Valor: ${risk.risco_residual.toFixed(1)}`
+                          : "—"
+                        }
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             ))}
