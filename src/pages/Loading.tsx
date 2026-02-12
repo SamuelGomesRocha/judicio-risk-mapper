@@ -90,7 +90,17 @@ export default function LoadingPage() {
           timestamp: new Date().toISOString()
         }));
         
-        addLog('info', 'FormData preparado com 3 arquivos + configuração de escalas');
+        // Adicionar dados RAG se disponíveis
+        if (apiConfig.ragData && Array.isArray(apiConfig.ragData) && apiConfig.ragData.length > 0) {
+          formData.append("rag_data", JSON.stringify(apiConfig.ragData));
+          addLog('info', 'Dados RAG adicionados ao FormData', {
+            size: JSON.stringify(apiConfig.ragData).length,
+            recordCount: apiConfig.ragData.length,
+            firstEntry: `Projeto: ${apiConfig.ragData[0]?.Projeto || "—"}`
+          });
+        }
+        
+        addLog('info', 'FormData preparado com 3 arquivos + configuração de escalas' + (apiConfig.ragData ? ` + ${apiConfig.ragData.length} registros RAG` : ''));
 
         // Log completo da requisição
         const requestDetails = {

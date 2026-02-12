@@ -1,4 +1,5 @@
 import { RiskColorConfig, DEFAULT_RISK_COLORS } from './risk-colors';
+import { RagData } from './rag';
 
 export interface RiskLevel {
   level: string;
@@ -30,4 +31,7 @@ export interface ConfigSettings {
   
   // Risk Colors Configuration
   riskColors: RiskColorConfig;
+  
+  // RAG Configuration (optional)
+  ragData?: RagData;
 }

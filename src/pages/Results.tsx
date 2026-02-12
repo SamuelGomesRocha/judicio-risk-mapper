@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
 import { RiskAnalysis, RiskAnalysisResponse } from "@/types/risk";
-import { RiskColorConfig, DEFAULT_RISK_COLORS } from "@/types/risk-colors";
 
 // Mock data - será substituído pelos dados reais da API
 const MOCK_DATA: RiskAnalysisResponse = {
@@ -34,7 +33,16 @@ const MOCK_DATA: RiskAnalysisResponse = {
         "Comprometimento dos serviços prestados a servidores, magistrados e usuários externos",
         "Incapacidade de absorver o aumento da carga de trabalho institucional",
         "Incapacidade de prover a baixa latência requerida pelos sistemas de missão crítica"
-      ]
+      ],
+      probabilidade: 6,
+      nivel_probabilidade: "3: MÉDIA",
+      impacto: 8,
+      nivel_impacto: "4: MUITO RELEVANTE",
+      risco_inerente: 48,
+      nivel_risco_inerente: "ALTO",
+      nivel_controle: "MEDIANO",
+      risco_residual: 28.8,
+      nivel_risco_residual: "ALTO"
     },
     {
       causa: [
@@ -47,7 +55,16 @@ const MOCK_DATA: RiskAnalysisResponse = {
         "Risco à missão crítica dos sistemas judiciais (PROJUDI, PJD)",
         "Comprometimento do funcionamento de aplicações",
         "Risco de perda de dados"
-      ]
+      ],
+      probabilidade: 8,
+      nivel_probabilidade: "4: ALTA",
+      impacto: 10,
+      nivel_impacto: "5: EXTREMO",
+      risco_inerente: 80,
+      nivel_risco_inerente: "EXTREMO",
+      nivel_controle: "FRACO",
+      risco_residual: 64,
+      nivel_risco_residual: "EXTREMO"
     }
   ],
   processed_files: [
@@ -64,7 +81,6 @@ export default function ResultsPage() {
   
   // Em produção, você pegaria os dados do location.state
   const analysisData = location.state?.analysisData || MOCK_DATA;
-  const riskColors = location.state?.riskColors || DEFAULT_RISK_COLORS;
   const { project_name, objectives, risks, processed_files } = analysisData;
 
   const handleExport = () => {
@@ -141,7 +157,7 @@ export default function ResultsPage() {
           </div>
         </Card>
 
-        <RiskTable risks={risks} riskColors={riskColors} />
+        <RiskTable risks={risks} />
 
         <RiskAssessmentDisclaimer />
       </main>

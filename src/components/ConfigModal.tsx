@@ -20,12 +20,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Settings, Lock, AlertTriangle, Info, Database, Sliders, Palette } from "lucide-react";
+import { Settings, Lock, AlertTriangle, Info, Database, Sliders, Palette, Sparkles } from "lucide-react";
 import { validateHttpsUrl } from "@/types/security";
 import { ConfigSettings, DEFAULT_RISK_SCALE, RiskLevel } from "@/types/config";
 import { RiskScaleTab } from "@/components/RiskScaleTab";
 import { RiskColorsTab } from "@/components/RiskColorsTab";
+import { RagTab } from "@/components/RagTab";
 import { DEFAULT_RISK_COLORS, RiskColorConfig } from "@/types/risk-colors";
+import { RagData } from "@/types/rag";
 
 const configSettingsSchema = z.object({
   url: z.string().url({ message: "URL inválida" }).min(1, { message: "URL é obrigatória" }).refine(
@@ -55,6 +57,7 @@ const configSettingsSchema = z.object({
     )
   ).min(1, "Deve haver pelo menos um nível de risco"),
   riskColors: z.record(z.string(), z.string().regex(/^#[0-9A-F]{6}$/i, "Cor deve ser um hex válido (#RRGGBB)")).default(DEFAULT_RISK_COLORS),
+  ragData: z.any().optional(),
 });
 
 export type ApiConfig = z.infer<typeof configSettingsSchema>;
@@ -76,6 +79,7 @@ export function ConfigModal({ open, onOpenChange, onSave, initialConfig }: Confi
       aikey: "",
       riskLevels: DEFAULT_RISK_SCALE,
       riskColors: DEFAULT_RISK_COLORS,
+      ragData: undefined,
     },
   });
 
@@ -102,7 +106,7 @@ export function ConfigModal({ open, onOpenChange, onSave, initialConfig }: Confi
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mt-4">
             <Tabs defaultValue="api" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="api" className="gap-2">
                   <Database className="w-4 h-4" />
                   API
@@ -114,6 +118,10 @@ export function ConfigModal({ open, onOpenChange, onSave, initialConfig }: Confi
                 <TabsTrigger value="colors" className="gap-2">
                   <Palette className="w-4 h-4" />
                   Cores de Risco
+                </TabsTrigger>
+                <TabsTrigger value="rag" className="gap-2">
+                  <Sparkles className="w-4 h-4" />
+                  RAG
                 </TabsTrigger>
               </TabsList>
 
@@ -246,6 +254,11 @@ export function ConfigModal({ open, onOpenChange, onSave, initialConfig }: Confi
               {/* Risk Colors Tab */}
               <TabsContent value="colors" className="space-y-4 mt-4">
                 <RiskColorsTab form={form} />
+              </TabsContent>
+
+              {/* RAG Tab */}
+              <TabsContent value="rag" className="space-y-4 mt-4">
+                <RagTab form={form} />
               </TabsContent>
             </Tabs>
 
