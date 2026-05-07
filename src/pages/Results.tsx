@@ -1,15 +1,78 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 import { RiskTable } from "@/components/RiskTable";
 import { RiskAssessmentDisclaimer } from "@/components/RiskAssessmentDisclaimer";
 import { ScalesModal } from "@/components/ScalesModal";
+import { EvaluationModal } from "@/components/EvaluationModal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Download } from "lucide-react";
-import { RiskAnalysis, RiskAnalysisResponse } from "@/types/risk";
+import { RiskAnalysis, RiskAnalysisResponse, RiskItem, EvaluationPayload } from "@/types/risk";
+import { ConfigSettings } from "@/types/config";
+import { useEvaluationSubmit } from "@/hooks/use-risk-items-loader";
+import { toast } from "sonner";
+
+/**
+ * Generate mock risk items from risks for development/testing
+ * This allows the UI to work without backend API
+ */
+function generateMockRiskItems(risks: RiskAnalysis[], analysisId: string): RiskItem[] {
+  const items: RiskItem[] = [];
+  let id = 1;
+  
+  risks.forEach((risk) => {
+    // Evento
+    items.push({
+      id: `${analysisId}-evento-${id}`,
+      field_type: "evento",
+      content: risk.evento_de_risco,
+      analysis_id: analysisId,
+    });
+    id++;
+    
+    // Causas
+    risk.causa.forEach((causa) => {
+      items.push({
+        id: `${analysisId}-causa-${id}`,
+        field_type: "causa",
+        content: causa,
+        analysis_id: analysisId,
+      });
+      id++;
+    });
+    
+    // Consequências
+    risk.consequencia.forEach((consequencia) => {
+      items.push({
+        id: `${analysisId}-consequencia-${id}`,
+        field_type: "consequencia",
+        content: consequencia,
+        analysis_id: analysisId,
+      });
+      id++;
+    });
+    
+    // Controles
+    if (risk.controles) {
+      risk.controles.forEach((controle) => {
+        items.push({
+          id: `${analysisId}-controle-${id}`,
+          field_type: "controle",
+          content: `${controle.nome}${controle.detalhe ? ` - ${controle.detalhe}` : ""}`,
+          analysis_id: analysisId,
+        });
+        id++;
+      });
+    }
+  });
+  
+  return items;
+}
 
 // Mock data - será substituído pelos dados reais da API
 const MOCK_DATA: RiskAnalysisResponse = {
+  analysis_id: "mock-analysis-id-12345",
   status: "success",
   project_name: "Nome do projeto a ser aplicado | MOCK DATA - Em produção, esta lista será gerada dinamicamente com base nos objetivos extraídos pela API",
   objectives: [
@@ -81,7 +144,123 @@ export default function ResultsPage() {
   
   // Em produção, você pegaria os dados do location.state
   const analysisData = location.state?.analysisData || MOCK_DATA;
-  const { project_name, objectives, risks, processed_files } = analysisData;
+  const { project_name, objectives, risks, processed_files, analysis_id } = analysisData;
+  
+  // Estado para avaliação de qualidade (ARES)
+  const [riskItems, setRiskItems] = useState<RiskItem[] | null>(null);
+  const [evaluatedItemIds, setEvaluatedItemIds] = useState<Set<string>>(new Set());
+  const [selectedItem, setSelectedItem] = useState<RiskItem | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
+  
+  // Carregar config da API para fazer requests de forma síncrona
+  // Evita condição de corrida onde o fetch roda com config nulo
+  const [config, setConfig] = useState<ConfigSettings | null>(() => {
+    try {
+      const configStr = localStorage.getItem("app_config");
+      return configStr ? (JSON.parse(configStr) as ConfigSettings) : null;
+    } catch {
+      return null;
+    }
+  });
+  
+  // Hook para submeter avaliações
+  const { submit: submitEvaluation } = useEvaluationSubmit(
+    config || { url: "", username: "", password: "", riskLevels: [], riskColors: [] }
+  );
+  
+  // Buscar risk_items quando analysis_id muda
+  useEffect(() => {
+    if (!analysis_id) return;
+    
+    const fetchRiskItems = async () => {
+      try {
+        setIsLoadingItems(true);
+        const cacheKey = `risk_items_v3_${analysis_id}`;
+        
+        // Tentar cache primeiro
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          try {
+            const parsedCache = JSON.parse(cached) as RiskItem[];
+            setRiskItems(parsedCache);
+            return;
+          } catch (e) {
+            console.warn("Failed to parse cached risk items");
+          }
+        }
+        
+        // Se config existe, tentar buscar do backend
+        if (config) {
+          try {
+            const authHeader = btoa(`${config.username}:${config.password}`);
+            const baseUrl = config.url.replace(/\/ingestion\/?$/, "");
+            const response = await fetch(
+              `${baseUrl}/analyses/${analysis_id}`,
+              {
+                method: "GET",
+                headers: {
+                  Authorization: `Basic ${authHeader}`,
+                  "Content-Type": "application/json",
+                  "bypass-tunnel-reminder": "true",
+                },
+              }
+            );
+            
+            if (response.ok) {
+              const data = await response.json();
+              const items: RiskItem[] = data.risk_items || [];
+              
+              if (items.length > 0) {
+                localStorage.setItem(cacheKey, JSON.stringify(items));
+                setRiskItems(items);
+                return;
+              }
+            }
+          } catch (error) {
+            console.warn("Failed to fetch risk items from backend, using mock data", error);
+          }
+        }
+        
+        // Fallback: usar mock items para desenvolvimento
+        const mockItems = generateMockRiskItems(risks, analysis_id);
+        // Não salvamos os Mocks no localStorage para não envenenar o cache de itens reais
+        setRiskItems(mockItems);
+        
+      } catch (error) {
+        console.error("Error loading risk items:", error);
+        toast.error("Erro ao carregar itens para avaliação");
+      } finally {
+        setIsLoadingItems(false);
+      }
+    };
+    
+    fetchRiskItems();
+  }, [analysis_id, config, risks]);
+  
+  // Handler para abrir modal de avaliação
+  const handleOpenEvaluationModal = (item: RiskItem) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+  
+  // Handler para fechar modal
+  const handleCloseEvaluationModal = () => {
+    setIsModalOpen(false);
+    setSelectedItem(null);
+  };
+  
+  // Handler para submeter avaliação
+  const handleSubmitEvaluation = async (evaluation: EvaluationPayload) => {
+    try {
+      await submitEvaluation(evaluation);
+      // Marcar item como avaliado no estado local
+      setEvaluatedItemIds(prev => new Set([...prev, evaluation.risk_item_id]));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro ao salvar avaliação";
+      throw new Error(errorMessage);
+    }
+  };
 
   const handleExport = () => {
     // Implementar exportação para CSV ou Excel
@@ -157,10 +336,23 @@ export default function ResultsPage() {
           </div>
         </Card>
 
-        <RiskTable risks={risks} />
+        <RiskTable 
+          risks={risks} 
+          riskItems={riskItems}
+          evaluatedItemIds={evaluatedItemIds}
+          onEvaluateItem={handleOpenEvaluationModal}
+        />
 
         <RiskAssessmentDisclaimer />
       </main>
+      
+      {/* Evaluation Modal */}
+      <EvaluationModal
+        isOpen={isModalOpen}
+        item={selectedItem}
+        onClose={handleCloseEvaluationModal}
+        onSubmit={handleSubmitEvaluation}
+      />
     </div>
   );
 }

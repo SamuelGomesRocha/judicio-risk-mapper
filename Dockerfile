@@ -1,24 +1,39 @@
 # Etapa 1: Build da aplicação
-FROM node:20-alpine as build
+FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
-# Copia os arquivos de dependência e instala
-COPY package.json package-lock.json ./
-RUN npm ci
+# Copia os arquivos de dependência
+COPY package.json bun.lockb ./
 
-# Copia o código fonte e gera o build de produção
+# Instala as dependências com bun
+RUN bun install --frozen-lockfile
+
+# Copia o código fonte
 COPY . .
-RUN npm run build
+
+# Build da aplicação React/Vite
+RUN bun run build
 
 # Etapa 2: Servidor Web (Nginx) para servir o front-end
 FROM nginx:alpine
 
-# Copia a configuração customizada do Nginx (criaremos abaixo)
+# Labels para metadados
+LABEL maintainer="PRTI Especialista em Automações"
+LABEL description="Risk Mapper - Judicial Risk Assessment Frontend"
+
+# Copia a configuração customizada do Nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copia os arquivos gerados no build para o Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/index.html || exit 1
+
+# Melhora a segurança removendo o header do servidor
+RUN sed -i 's/server_tokens off;/server_tokens off;/' /etc/nginx/nginx.conf
 
 EXPOSE 80
 

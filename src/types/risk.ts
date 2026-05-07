@@ -25,6 +25,29 @@ export interface RiskAnalysisResponse {
   objectives: string[];
   risks: RiskAnalysis[];
   processed_files: string[];
+  analysis_id: string;
+}
+
+export interface RiskItem {
+  id: string;
+  field_type: "evento" | "causa" | "consequencia" | "controle";
+  content: string;
+  analysis_id: string;
+}
+
+export interface EvaluationPayload {
+  risk_item_id: string;
+  evaluator_type: "human";
+  context_relevance: number;
+  faithfulness: number;
+  answer_relevance: number;
+  feedback_notes?: string;
+}
+
+export interface EvaluationCreateResponse {
+  id: string;
+  status: string;
+  created_at: string;
 }
 
 export interface UploadedFiles {

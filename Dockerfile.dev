@@ -1,0 +1,22 @@
+# Dockerfile para desenvolvimento (hot-reload)
+FROM oven/bun:latest
+
+WORKDIR /app
+
+# Instala curl para health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copia arquivos de dependência
+COPY package.json bun.lockb ./
+
+# Instala dependências
+RUN bun install
+
+# Copia código fonte
+COPY . .
+
+# Expõe portas para Vite + Nginx preview
+EXPOSE 8080 5173
+
+# Inicia servidor de desenvolvimento
+CMD ["bun", "run", "dev"]

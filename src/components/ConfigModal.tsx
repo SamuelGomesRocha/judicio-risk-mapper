@@ -32,13 +32,9 @@ import { RagData } from "@/types/rag";
 const configSettingsSchema = z.object({
   url: z.string().url({ message: "URL inválida" }).min(1, { message: "URL é obrigatória" }).refine(
     (url) => {
-      const isDevelopment = import.meta.env.DEV || !import.meta.env.PROD;
-      if (isDevelopment) {
-        return url.startsWith('http://') || url.startsWith('https://');
-      }
-      return validateHttpsUrl(url);
+      return url.startsWith('http://') || url.startsWith('https://');
     },
-    { message: "URL deve usar HTTPS em produção (TLS 1.3 recomendado)" }
+    { message: "URL deve usar HTTP ou HTTPS" }
   ),
   username: z.string().min(1, { message: "Usuário é obrigatório" }),
   password: z.string().min(1, { message: "Senha é obrigatória" }),
@@ -133,8 +129,8 @@ export function ConfigModal({ open, onOpenChange, onSave, initialConfig }: Confi
                   <AlertTitle className="text-blue-900 ml-2">Segurança de Dados</AlertTitle>
                   <AlertDescription className="text-blue-800 text-xs ml-6 mt-2">
                     <ul className="space-y-1 list-disc list-inside">
-                      <li>HTTPS/TLS 1.3 obrigatório para transmissão ao backend <span className={import.meta.env.DEV ? "text-amber-600 font-semibold" : ""}>{import.meta.env.DEV ? "(HTTP aceito em testes)" : ""}</span></li>
-                      <li>Token será enviado criptografado para o servidor</li>
+                      <li>HTTP e HTTPS aceitos para transmissão ao backend</li>
+                      <li>Token será enviado para o servidor</li>
                       <li>Backend armazena no Secrets Manager (AWS/Azure/GCP)</li>
                       <li>Implementa OAuth 2.0 + JWT no backend</li>
                     </ul>
@@ -153,12 +149,12 @@ export function ConfigModal({ open, onOpenChange, onSave, initialConfig }: Confi
                       </FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="https://api.exemplo.com/webhook" 
+                          placeholder="http://api.exemplo.com/webhook" 
                           {...field} 
                         />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-xs text-muted-foreground mt-1">Deve usar HTTPS (TLS 1.3 mínimo)</p>
+                      <p className="text-xs text-muted-foreground mt-1">Use HTTP ou HTTPS</p>
                     </FormItem>
                   )}
                 />

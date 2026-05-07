@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { RiskAnalysis } from "@/types/risk";
+import { RiskAnalysis, RiskItem } from "@/types/risk";
 import { getColorForLevel, getColorForRiskLevel } from "@/types/risk-colors";
+import { EvaluationButton } from "@/components/EvaluationButton";
 import { getControlLevel } from "@/types/control-levels";
 import { EditableCell } from "@/components/EditableCell";
 import { EditableList } from "@/components/EditableList";
@@ -32,10 +33,42 @@ import {
 interface RiskTableProps {
   risks: RiskAnalysis[];
   onRisksChange?: (risks: RiskAnalysis[]) => void;
+  riskItems?: RiskItem[];
+  evaluatedItemIds?: Set<string>;
+  onEvaluateItem?: (item: RiskItem) => void;
 }
 
-export const RiskTable = ({ risks, onRisksChange }: RiskTableProps) => {
+export const RiskTable = ({ 
+  risks, 
+  onRisksChange,
+  riskItems,
+  evaluatedItemIds,
+  onEvaluateItem
+}: RiskTableProps) => {
   const [localRisks, setLocalRisks] = useState(risks);
+  
+  /**
+   * Find risk items for a specific field content
+   * Used to render evaluation buttons for each field
+   */
+  const findRiskItemsForContent = (fieldType: "evento" | "causa" | "consequencia" | "controle", content: string): RiskItem[] => {
+    if (!riskItems) return [];
+    
+    const normalizedContent = content.trim().toLowerCase();
+    
+    return riskItems.filter(item => {
+      if (item.field_type !== fieldType) return false;
+      
+      const normalizedItemContent = item.content.trim().toLowerCase();
+      
+      // Exact match or contains match (for partial matches)
+      return (
+        normalizedItemContent === normalizedContent ||
+        normalizedItemContent.includes(normalizedContent) ||
+        normalizedContent.includes(normalizedItemContent.substring(0, 30))
+      );
+    });
+  };
 
   /**
    * Handle risk updates with automatic calculation of derived fields
@@ -194,22 +227,70 @@ export const RiskTable = ({ risks, onRisksChange }: RiskTableProps) => {
             {localRisks.map((risk, index) => (
               <TableRow key={index} className="align-top">
                 <TableCell className="font-medium text-xs px-2 py-2 max-w-xs">
-                  <EditableCell
-                    value={risk.evento_de_risco}
-                    onSave={(value) => handleUpdateRisk(index, { ...risk, evento_de_risco: value })}
-                  />
+                  <div className="flex items-start gap-1">
+                    <EditableCell
+                      value={risk.evento_de_risco}
+                      onSave={(value) => handleUpdateRisk(index, { ...risk, evento_de_risco: value })}
+                    />
+                    {onEvaluateItem && riskItems && (
+                      <>
+                        {findRiskItemsForContent("evento", risk.evento_de_risco).map(item => (
+                          <EvaluationButton
+                            key={item.id}
+                            item={item}
+                            isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                            onEvaluate={onEvaluateItem}
+                          />
+                        ))}
+                      </>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-xs px-2 py-2 max-w-sm">
-                  <EditableList
-                    items={risk.causa}
-                    onSave={(items) => handleUpdateRisk(index, { ...risk, causa: items })}
-                  />
+                  <div className="space-y-2">
+                    <EditableList
+                      items={risk.causa}
+                      onSave={(items) => handleUpdateRisk(index, { ...risk, causa: items })}
+                    />
+                    {onEvaluateItem && riskItems && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {risk.causa.map((causa, causalIdx) => {
+                          const causaItems = findRiskItemsForContent("causa", causa);
+                          return causaItems.map(item => (
+                            <EvaluationButton
+                              key={`${index}-causa-${causalIdx}-${item.id}`}
+                              item={item}
+                              isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                              onEvaluate={onEvaluateItem}
+                            />
+                          ));
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-xs px-2 py-2 max-w-sm">
-                  <EditableList
-                    items={risk.consequencia}
-                    onSave={(items) => handleUpdateRisk(index, { ...risk, consequencia: items })}
-                  />
+                  <div className="space-y-2">
+                    <EditableList
+                      items={risk.consequencia}
+                      onSave={(items) => handleUpdateRisk(index, { ...risk, consequencia: items })}
+                    />
+                    {onEvaluateItem && riskItems && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {risk.consequencia.map((consequencia, consequenciaIdx) => {
+                          const consequenciaItems = findRiskItemsForContent("consequencia", consequencia);
+                          return consequenciaItems.map(item => (
+                            <EvaluationButton
+                              key={`${index}-consequencia-${consequenciaIdx}-${item.id}`}
+                              item={item}
+                              isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                              onEvaluate={onEvaluateItem}
+                            />
+                          ));
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   <EditableProbability
@@ -240,10 +321,28 @@ export const RiskTable = ({ risks, onRisksChange }: RiskTableProps) => {
                   </TooltipProvider>
                 </TableCell>
                 <TableCell className="text-xs px-2 py-2 max-w-md">
-                  <EditableControlsList
-                    items={risk.controles || []}
-                    onSave={(items) => handleUpdateRisk(index, { ...risk, controles: items })}
-                  />
+                  <div className="space-y-2">
+                    <EditableControlsList
+                      items={risk.controles || []}
+                      onSave={(items) => handleUpdateRisk(index, { ...risk, controles: items })}
+                    />
+                    {onEvaluateItem && riskItems && risk.controles && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {risk.controles.map((controle, controleIdx) => {
+                          const controleContent = `${controle.nome}${controle.detalhe ? ` - ${controle.detalhe}` : ""}`;
+                          const controleItems = findRiskItemsForContent("controle", controle.nome);
+                          return controleItems.map(item => (
+                            <EvaluationButton
+                              key={`${index}-controle-${controleIdx}-${item.id}`}
+                              item={item}
+                              isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                              onEvaluate={onEvaluateItem}
+                            />
+                          ));
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </TableCell>
                 <TableCell className="text-center text-xs px-2 py-2 whitespace-nowrap">
                   <EditableControlFactor

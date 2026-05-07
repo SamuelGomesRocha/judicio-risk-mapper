@@ -22,3 +22,19 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Deploy scripts
+deploy.ps1
+
+# Ignore .md files
+*.md
+*.zip   
+
+#ignore docker files
+PI/Dockerfile
+PI/docker-compose.yml
+docker-compose.yml
+PI/requirements.txt 
+
+#ignore tests
+tests
