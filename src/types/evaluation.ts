@@ -115,11 +115,13 @@ export function isEvaluationComplete(state: EvaluationState): boolean {
  */
 export function evaluationStateToPayload(
   state: EvaluationState,
-  riskItemId: string
+  riskItemId: string,
+  content: string
 ) {
   return {
     risk_item_id: riskItemId,
     evaluator_type: "human" as const,
+    response: content,
     context_relevance: state.context_relevance!,
     faithfulness: state.faithfulness!,
     answer_relevance: state.answer_relevance!,
