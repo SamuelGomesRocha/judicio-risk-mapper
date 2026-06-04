@@ -24,7 +24,7 @@ function generateMockRiskItems(risks: RiskAnalysis[], analysisId: string): RiskI
   risks.forEach((risk) => {
     // Evento
     items.push({
-      id: `${analysisId}-evento-${id}`,
+      id: crypto.randomUUID(),
       field_type: "evento",
       content: risk.evento_de_risco,
       analysis_id: analysisId,
@@ -34,7 +34,7 @@ function generateMockRiskItems(risks: RiskAnalysis[], analysisId: string): RiskI
     // Causas
     risk.causa.forEach((causa) => {
       items.push({
-        id: `${analysisId}-causa-${id}`,
+        id: crypto.randomUUID(),
         field_type: "causa",
         content: causa,
         analysis_id: analysisId,
@@ -45,7 +45,7 @@ function generateMockRiskItems(risks: RiskAnalysis[], analysisId: string): RiskI
     // Consequências
     risk.consequencia.forEach((consequencia) => {
       items.push({
-        id: `${analysisId}-consequencia-${id}`,
+        id: crypto.randomUUID(),
         field_type: "consequencia",
         content: consequencia,
         analysis_id: analysisId,
@@ -57,7 +57,7 @@ function generateMockRiskItems(risks: RiskAnalysis[], analysisId: string): RiskI
     if (risk.controles) {
       risk.controles.forEach((controle) => {
         items.push({
-          id: `${analysisId}-controle-${id}`,
+          id: crypto.randomUUID(),
           field_type: "controle",
           content: `${controle.nome}${controle.detalhe ? ` - ${controle.detalhe}` : ""}`,
           analysis_id: analysisId,
