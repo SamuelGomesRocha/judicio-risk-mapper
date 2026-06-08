@@ -144,7 +144,7 @@ export default function ResultsPage() {
   
   // Em produção, você pegaria os dados do location.state
   const analysisData = location.state?.analysisData || MOCK_DATA;
-  const { project_name, objectives, risks, processed_files, analysis_id } = analysisData;
+  const { project_name, objectives, risks, processed_files, trace_id } = analysisData;
   
   // Estado para avaliação de qualidade (ARES)
   const [riskItems, setRiskItems] = useState<RiskItem[] | null>(null);
@@ -169,74 +169,21 @@ export default function ResultsPage() {
     config || { url: "", username: "", password: "", riskLevels: [], riskColors: [] }
   );
   
-  // Buscar risk_items quando analysis_id muda
+  // Gerar risk_items localmente a partir dos riscos
   useEffect(() => {
-    if (!analysis_id) return;
+    if (!trace_id || !risks) return;
     
-    const fetchRiskItems = async () => {
-      try {
-        setIsLoadingItems(true);
-        const cacheKey = `risk_items_v3_${analysis_id}`;
-        
-        // Tentar cache primeiro
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          try {
-            const parsedCache = JSON.parse(cached) as RiskItem[];
-            setRiskItems(parsedCache);
-            return;
-          } catch (e) {
-            console.warn("Failed to parse cached risk items");
-          }
-        }
-        
-        // Se config existe, tentar buscar do backend
-        if (config) {
-          try {
-            const authHeader = btoa(`${config.username}:${config.password}`);
-            const baseUrl = config.url.replace(/\/ingestion\/?$/, "");
-            const response = await fetch(
-              `${baseUrl}/analyses/${analysis_id}`,
-              {
-                method: "GET",
-                headers: {
-                  Authorization: `Basic ${authHeader}`,
-                  "Content-Type": "application/json",
-                  "bypass-tunnel-reminder": "true",
-                },
-              }
-            );
-            
-            if (response.ok) {
-              const data = await response.json();
-              const items: RiskItem[] = data.risk_items || [];
-              
-              if (items.length > 0) {
-                localStorage.setItem(cacheKey, JSON.stringify(items));
-                setRiskItems(items);
-                return;
-              }
-            }
-          } catch (error) {
-            console.warn("Failed to fetch risk items from backend, using mock data", error);
-          }
-        }
-        
-        // Fallback: usar mock items para desenvolvimento
-        const mockItems = generateMockRiskItems(risks, analysis_id);
-        // Não salvamos os Mocks no localStorage para não envenenar o cache de itens reais
-        setRiskItems(mockItems);
-        
-      } catch (error) {
-        console.error("Error loading risk items:", error);
-        toast.error("Erro ao carregar itens para avaliação");
-      } finally {
-        setIsLoadingItems(false);
-      }
-    };
-    
-    fetchRiskItems();
-  }, [analysis_id, config, risks]);
+    try {
+      setIsLoadingItems(true);
+      const items = generateMockRiskItems(risks, trace_id);
+      setRiskItems(items);
+    } catch (error) {
+      console.error("Error generating risk items:", error);
+      toast.error("Erro ao carregar itens para avaliação");
+    } finally {
+      setIsLoadingItems(false);
+    }
+  }, [trace_id, risks]);
   
   // Handler para abrir modal de avaliação
   const handleOpenEvaluationModal = (item: RiskItem) => {
@@ -250,10 +197,14 @@ export default function ResultsPage() {
     setSelectedItem(null);
   };
   
-  // Handler para submeter avaliação
   const handleSubmitEvaluation = async (evaluation: EvaluationPayload) => {
     try {
-      await submitEvaluation(evaluation);
+      // Adicionamos project_name que é necessário na nova arquitetura
+      const finalPayload = {
+        ...evaluation,
+        project_name: project_name
+      };
+      await submitEvaluation(finalPayload);
       // Marcar item como avaliado no estado local
       setEvaluatedItemIds(prev => new Set([...prev, evaluation.response]));
     } catch (error) {

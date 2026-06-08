@@ -25,18 +25,19 @@ export interface RiskAnalysisResponse {
   objectives: string[];
   risks: RiskAnalysis[];
   processed_files: string[];
-  analysis_id: string;
+  trace_id: string;
 }
 
 export interface RiskItem {
   id: string;
   field_type: "evento" | "causa" | "consequencia" | "controle";
   content: string;
-  analysis_id: string;
+  trace_id: string;
 }
 
 export interface EvaluationPayload {
-  risk_item_id?: string;
+  rag_trace_id?: string;
+  project_name?: string;
   evaluator_type: "human";
   response: string;
   context_relevance: number;

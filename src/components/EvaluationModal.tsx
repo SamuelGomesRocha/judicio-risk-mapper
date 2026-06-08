@@ -86,7 +86,7 @@ export function EvaluationModal({
 
     try {
       setIsSubmitting(true);
-      const payload = evaluationStateToPayload(state, item.id, item.content);
+      const payload = evaluationStateToPayload(state, item.content, item.trace_id);
       await onSubmit(payload);
       onClose();
       toast.success(`Avaliação de ${fieldTypeLabel} registrada com sucesso!`);

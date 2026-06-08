@@ -115,7 +115,8 @@ export function useEvaluationSubmit(config: ConfigSettings) {
 
   const submit = useCallback(
     async (payload: {
-      risk_item_id?: string;
+      rag_trace_id?: string;
+      project_name?: string;
       evaluator_type: "human";
       response: string;
       context_relevance: number;

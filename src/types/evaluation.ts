@@ -115,11 +115,13 @@ export function isEvaluationComplete(state: EvaluationState): boolean {
  */
 export function evaluationStateToPayload(
   state: EvaluationState,
-  riskItemId: string | undefined,
-  content: string
+  content: string,
+  ragTraceId?: string,
+  projectName?: string
 ) {
   return {
-    ...(riskItemId ? { risk_item_id: riskItemId } : {}),
+    ...(ragTraceId ? { rag_trace_id: ragTraceId } : {}),
+    ...(projectName ? { project_name: projectName } : {}),
     evaluator_type: "human" as const,
     response: content,
     context_relevance: state.context_relevance!,
