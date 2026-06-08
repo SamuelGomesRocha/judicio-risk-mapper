@@ -36,7 +36,7 @@ export interface RiskItem {
 }
 
 export interface EvaluationPayload {
-  risk_item_id: string;
+  risk_item_id?: string;
   evaluator_type: "human";
   response: string;
   context_relevance: number;

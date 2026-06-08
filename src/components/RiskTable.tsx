@@ -238,7 +238,7 @@ export const RiskTable = ({
                           <EvaluationButton
                             key={item.id}
                             item={item}
-                            isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                            isEvaluated={evaluatedItemIds?.has(item.content) || false}
                             onEvaluate={onEvaluateItem}
                           />
                         ))}
@@ -260,7 +260,7 @@ export const RiskTable = ({
                             <EvaluationButton
                               key={`${index}-causa-${causalIdx}-${item.id}`}
                               item={item}
-                              isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                              isEvaluated={evaluatedItemIds?.has(item.content) || false}
                               onEvaluate={onEvaluateItem}
                             />
                           ));
@@ -283,7 +283,7 @@ export const RiskTable = ({
                             <EvaluationButton
                               key={`${index}-consequencia-${consequenciaIdx}-${item.id}`}
                               item={item}
-                              isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                              isEvaluated={evaluatedItemIds?.has(item.content) || false}
                               onEvaluate={onEvaluateItem}
                             />
                           ));
@@ -335,7 +335,7 @@ export const RiskTable = ({
                             <EvaluationButton
                               key={`${index}-controle-${controleIdx}-${item.id}`}
                               item={item}
-                              isEvaluated={evaluatedItemIds?.has(item.id) || false}
+                              isEvaluated={evaluatedItemIds?.has(item.content) || false}
                               onEvaluate={onEvaluateItem}
                             />
                           ));

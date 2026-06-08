@@ -255,7 +255,7 @@ export default function ResultsPage() {
     try {
       await submitEvaluation(evaluation);
       // Marcar item como avaliado no estado local
-      setEvaluatedItemIds(prev => new Set([...prev, evaluation.risk_item_id]));
+      setEvaluatedItemIds(prev => new Set([...prev, evaluation.response]));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Erro ao salvar avaliação";
       throw new Error(errorMessage);
